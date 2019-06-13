@@ -1,0 +1,113 @@
+<thf-page-default t-title="Professores">
+    <thf-button t-label="Refazer busca" (t-click)="loadProfessores()"></thf-button>
+    <kendo-grid [height]="height" [data]="professores" [loading]="loading" [pageSize]="state.take" [skip]="state.skip"
+        [pageable]="pagination" [sortable]="{
+        allowUnsort: permiteNaoOrdernar(),
+        mode: permiteMultiplaSelecao()
+    }" [sort]="state.sort" [filterable]="filterOption" [filter]="filter" [groupable]="groupable" [group]="state.group"
+        (dataStateChange)="dataStateChange($event)" [resizable]="resizable" [reorderable]="reorderable"
+        [columnMenu]="columnMenu">
+        <ng-template kendoGridToolbarTemplate [position]="menuExternoPosition">
+            <div style="font-size: 24px;float:right;">
+                <span #export class="thf-icon thf-icon-export" (click)="popup.toggle()"></span>
+                <thf-popup #popup t-position="right" [t-actions]="popupActionsExport" [t-target]="export">
+                </thf-popup>
+                <span class="thf-icon thf-icon-settings" (click)="modal.open()"></span>
+            </div>
+
+        </ng-template>
+        <ng-template *ngIf="detailEnabled" kendoGridDetailTemplate let-dataItem>
+            <section>
+                <p><strong>Cpf:</strong> {{dataItem.email}}</p>
+                <p><strong>Email:</strong> {{dataItem.cpf}}</p>
+            </section>
+        </ng-template>
+        <kendo-grid-column field="id" title="Id" width="40"
+            [hidden]="hiddenColumns && hiddenColumns.indexOf('id') > -1">
+        </kendo-grid-column>
+        <kendo-grid-column field="name" title="Nome" width="250"
+            [hidden]="hiddenColumns && hiddenColumns.indexOf('name') > -1">
+        </kendo-grid-column>
+        <kendo-grid-column field="academicDegree" title="Titulação" width="250"
+            [hidden]="hiddenColumns && hiddenColumns.indexOf('academicDegree') > -1">
+            <ng-template style="position: relative;" kendoGridCellTemplate let-dataItem let-rowIndex="rowIndex">
+                <div style="position: relative;">
+                    <thf-tag style="position: relative" t-value="{{dataItem.academicDegree}}"
+                        [t-type]="getTipo(dataItem.academicDegree)">
+                    </thf-tag>
+                </div>
+            </ng-template>
+        </kendo-grid-column>        
+        <kendo-grid-pdf fileName="professores.pdf" [allPages]="true" paperSize="A4" [repeatHeaders]="true"
+            [landscape]="true">
+        </kendo-grid-pdf>
+        <kendo-grid-excel fileName="professores.xlsx"></kendo-grid-excel>
+    </kendo-grid>
+    <div style="margin-top: 20px;">
+        <!-- <thf-modal #modal t-title="Configurações da grid"> -->
+
+        <thf-number class="thf-md-2" t-label="Tamanho da grid" name="tamanho" [(ngModel)]="height"></thf-number>
+
+        <thf-number class="thf-md-2" t-label="Quantidade por pagina" name="totalRecords" [(ngModel)]="state.take">
+        </thf-number>
+
+        <thf-select class="thf-md-4" name="combo" t-label="Filtro" [t-options]="[
+        { value: true, label: 'Habilitado' }, 
+        { value: false, label: 'Desabilitado' },
+        { value: 'menu', label: 'Estilo menu' }
+        ]" [(ngModel)]="filterOption">
+        </thf-select>
+
+        <thf-switch class="thf-md-2" t-label="Paginação" t-label-off="string" name="pagination"
+            t-label-off="Paginação habilitada" t-label-on="Paginação desabilitada." [(ngModel)]="pagination">
+        </thf-switch>
+
+        <thf-switch class="thf-md-2" t-label="Agrupar" name="groupEnabled" t-label-off="Desabilitado"
+            t-label-on="Habilitado" [(ngModel)]="groupable">
+        </thf-switch>
+
+        <div class="thf-md-12">
+            <thf-switch class="thf-md-3" t-label="Loading" name="loadEnabled" t-label-off="Loading padrão desabilitado"
+                t-label-on="Loading padrão habilitado" [(ngModel)]="loadEnabled">
+            </thf-switch>
+
+
+            <thf-number class="thf-md-2" t-label="Tempo do loading" name="tempo" [(ngModel)]="loadingTime"></thf-number>
+
+            <thf-checkbox-group class="thf-md-6" name="checkboxGroup" t-label="Opções de ordenação"
+                [(ngModel)]="opcoesDeOrdenacao"
+                [t-options]="[{ value: 'sort', label: 'Permite desabilitar a ordenação' }, { value: 'multi-sort', label: 'Habilita ordenação múltipla' }]">
+            </thf-checkbox-group>
+        </div>
+        <thf-select class="thf-md-4" name="menuExternoPosition" [(ngModel)]="menuExternoPosition"
+            t-label="Posição do menu externo" [t-options]="[
+        { value: 'top', label: 'Encima' }, 
+        { value: 'bottom', label: 'Embaixo' },
+        { value: 'both', label: 'Encima e Embaixo' }
+        ]" [(ngModel)]="filterOption">
+        </thf-select>
+        <thf-switch class="thf-md-4" t-label="Redimencionar" name="resizable" t-label-off="Habilitado"
+            t-label-on="Desabilitado" [(ngModel)]="resizable">
+        </thf-switch>
+        <thf-switch class="thf-md-4" t-label="Detalhes" name="resizable" t-label-off="Mostrar" t-label-on="Esconder"
+            [(ngModel)]="detailEnabled ">
+        </thf-switch>
+        <div class="thf-md-12">
+            <thf-checkbox-group class="thf-md-4" name="hiddenColumns" t-label="Esconder coluna"
+                [(ngModel)]="hiddenColumns" [t-options]="[
+                { value: 'name', label: 'Nome' }, 
+                { value: 'id', label: 'Id' },
+                { value: 'academicDegree', label: 'Titulação' }]">
+            </thf-checkbox-group>
+            <thf-switch class="thf-md-4" t-label="Reordenar" name="reorderable" t-label-off="Desabilitado"
+                t-label-on="Habilitado" [(ngModel)]="reorderable">
+            </thf-switch>
+            <thf-switch class="thf-md-4" t-label="Menu na coluna" name="columnMenu" t-label-off="Desabilitado"
+                t-label-on="Habilitado" [(ngModel)]="columnMenu">
+            </thf-switch>
+        </div>
+
+        <!-- </thf-modal> -->
+    </div>
+
+</thf-page-default>
